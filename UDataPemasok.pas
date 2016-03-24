@@ -1,0 +1,269 @@
+unit UDataPemasok;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls;
+
+type
+  Tfpemasok = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label7: TLabel;
+    ekode: TEdit;
+    enama: TEdit;
+    etelepon: TEdit;
+    eperusahaan: TEdit;
+    erekening: TEdit;
+    malamat: TMemo;
+    sbinfo: TStatusBar;
+    bsimpan: TButton;
+    bhapus: TButton;
+    bbatal: TButton;
+    cbank: TComboBox;
+    rgKelamin: TRadioGroup;
+    procedure FormActivate(Sender: TObject);
+    procedure ekodeChange(Sender: TObject);
+    procedure ekodeKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure bbatalClick(Sender: TObject);
+    procedure bsimpanClick(Sender: TObject);
+    procedure bhapusClick(Sender: TObject);
+    procedure eteleponChange(Sender: TObject);
+    procedure ekodeKeyPress(Sender: TObject; var Key: Char);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+  private
+    procedure loadData;
+    function validateData:Boolean;
+  public
+    { Public declarations }
+  end;
+
+var
+  fpemasok: Tfpemasok;
+  id:string;
+
+implementation
+
+uses DatabaseScript, FormScript, UDataModule;
+
+{$R *.dfm}
+
+procedure Tfpemasok.FormActivate(Sender: TObject);
+begin
+KeyPreview:=true;
+bbatal.Click;
+end;
+
+procedure Tfpemasok.ekodeChange(Sender: TObject);
+begin
+CodeChar(sender);
+runKueri(openKueri('*','data_pemasok',' where kode='+QuotedStr(TEdit(Sender).Text)));
+if dm.zkue.RecordCount>0 then
+      loadData
+else
+   id:='';
+end;
+
+procedure Tfpemasok.ekodeKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  temp : string;
+
+begin
+if (Key=VK_delete) or (Key=VK_BACK) then
+   begin
+   runKueri(openKueri('*','data_pemasok',' where kode='+QuotedStr(TEdit(Sender).Text)));
+   if dm.zkue.RecordCount>0 then
+          loadData
+   else
+       begin
+       id:='';
+       temp:=ekode.Text;
+       batal(Self,id);
+       ekode.Text:=temp;
+       ekode.SetFocus;
+       ekode.SelStart:=Length(ekode.Text);
+       end;
+   end;
+end;
+
+procedure Tfpemasok.loadData;
+var
+  kode,nama,kelamin,telepon,perusahaan,rekening,bank,alamat:String;
+
+begin
+with dm.zkue do
+    begin
+    id:=Fields[0].AsString;
+    kode:=Fields[1].AsString;
+    nama:=Fields[2].AsString;
+    Kelamin:=Fields[3].AsString;
+    telepon:=Fields[4].AsString;
+    perusahaan:=Fields[5].AsString;
+    rekening:=Fields[6].AsString;
+    bank:=Fields[7].AsString;
+    alamat:=Fields[8].AsString;
+    end;
+
+ekode.Text:=kode;
+enama.Text:=nama;
+if kelamin='Pria' then
+   rgKelamin.ItemIndex:=0
+else
+   rgKelamin.ItemIndex:=1;
+etelepon.Text:=telepon;
+eperusahaan.Text:=perusahaan;
+erekening.Text:=rekening;
+cbank.Text:=bank;
+malamat.Text:=alamat;
+ekode.SetFocus;
+end;
+
+procedure Tfpemasok.bbatalClick(Sender: TObject);
+begin
+batal(Self,id);
+ekode.Text:=generateKode('PK','data_pemasok');
+enama.SetFocus;
+end;
+
+procedure Tfpemasok.bsimpanClick(Sender: TObject);
+const
+  kolom:array [0..7] of string = ('kode','nama','kelamin','telepon','perusahaan',
+  'rekening','bank','alamat');
+  kelamin:array [0..1] of string = ('Pria','Wanita');
+
+var
+  data : array [0..7] of string;
+  updateKolom:array of string;
+  insertKolom:array of string;
+  i:integer;
+
+begin
+if validateKode(id,'PK',ekode.Text,'data_pemasok',sbinfo,ekode) and validateData then
+   begin
+    data[0]:=ekode.Text;
+    data[1]:=enama.Text;
+    data[2]:=kelamin[rgKelamin.ItemIndex];
+    data[3]:=etelepon.Text;
+    data[4]:=eperusahaan.Text;
+    data[5]:=erekening.Text;
+    data[6]:=cbank.Text;
+    data[7]:=malamat.Text;
+
+    if id='' then
+         begin
+           SetLength(insertKolom,8);
+           for i:=0 to 7 do
+                insertKolom[i]:=kolom[i];
+           runKueri(insertKueri(insertKolom,data,'data_pemasok'),False);
+           sbinfo.Panels[1].Text:='Data '+ekode.Text+' telah ditambahkan';
+         end
+      else
+          begin
+            SetLength(updateKolom,8);
+            for i:=1 to 7 do
+                 updateKolom[i]:=kolom[i];
+            runKueri(updateKueri(updateKolom,Data,'data_pemasok',id),False);
+            sbinfo.Panels[1].Text:='Data '+ekode.Text+' telah disunting';
+          end;
+    bbatal.Click;
+   end;
+end;
+
+function Tfpemasok.validateData: Boolean;
+var
+ cek:Boolean;
+ j,i:Integer;
+
+begin
+cek:=True;
+ for i:=1 to 8 do
+     begin
+     for j:=0 to ComponentCount-1 do
+          begin
+          if (Components[j] is TEdit) and (TEdit(Components[j]).TabOrder=i) then
+              begin
+              if (TEdit(Components[j]).Text=TEdit(Components[j]).Hint) then
+                  Begin
+                  sbinfo.Panels[1].Text:='Isian teks belum diisi ';
+                  TEdit(Components[j]).SetFocus;
+                  cek:=False;
+                  Break;
+                  end
+              end;
+          if (Components[j] is TComboBox) and (TComboBox(Components[j]).TabOrder=i) then
+              begin
+              if (TComboBox(Components[j]).Text=TComboBox(Components[j]).Hint) then
+                  Begin
+                  sbinfo.Panels[1].Text:='Anda belum memilih';
+                  TComboBox(Components[j]).SetFocus;
+                  cek:=False;
+                  Break;
+                  end;
+              end;
+          if (Components[j] is TMemo) and (TMemo(Components[j]).TabOrder=i) then
+              begin
+                if (TMemo(Components[j]).Text=TMemo(Components[j]).Hint) then
+                  Begin
+                  sbinfo.Panels[1].Text:='Isian teks belum diisi';
+                  TMemo(Components[j]).SetFocus;
+                  cek:=False;
+                  Break;
+                  end;
+              end;   
+          if (Components[j] is TRadioGroup) and (TRadioGroup(Components[j]).TabOrder=i) then
+              begin
+                if (TRadioGroup(Components[j]).ItemIndex=-1) then
+                    begin
+                    sbinfo.Panels[1].Text:='Anda belum menceklis pilihan';
+                    cek:=false;
+                    Break;
+                    TRadioButton(Components[j]).SetFocus;
+                    end;
+            end;
+          end;
+  if not(cek) then Break;
+  end;
+ Result:=cek;
+end;
+
+procedure Tfpemasok.bhapusClick(Sender: TObject);
+var
+  deleted:integer;
+begin
+deleted:=MessageDlg('Anda yakin ingin menghapus data ?',mtConfirmation,[mbyes,mbNo],0);
+if deleted=mrYes then
+   begin
+    runKueri(deleteKueri('data_pemasok',id),false);
+    sbinfo.Panels[1].Text:='Data '+ekode.Text+' telah dihapus';
+    bbatal.Click;
+   end;
+end;
+
+procedure Tfpemasok.eteleponChange(Sender: TObject);
+begin
+phoneNumber(sender);
+end;
+
+procedure Tfpemasok.ekodeKeyPress(Sender: TObject; var Key: Char);
+begin
+if key=#13 then
+   key:=#0;
+end;
+
+procedure Tfpemasok.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+if (key=#13) or (key=#27) then
+   begin        
+   if key=#27 then
+      Self.Close;
+   key:=#0;
+   end;
+end;
+
+end.

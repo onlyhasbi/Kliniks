@@ -1,0 +1,521 @@
+unit FormScript;
+
+interface
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, StdCtrls, ExtCtrls,db,DBGrids;
+
+
+  procedure batal(aform:TForm;var id:string); overload;
+  procedure batal(aform:TForm); overload;
+  procedure setAgama(var cagama:TComboBox);
+  procedure setTanggal(var ctanggal:TComboBox;var cbulan:TComboBox;var ctahun:TComboBox);
+  procedure setKadaluarsa(var ctanggal:TComboBox;var cbulan:TComboBox;var ctahun:TComboBox);
+  procedure cleanArr(var arr:array of String);
+  function generateKode(kode:String;tabel:String):String;
+  function generateKodeKunjungan(kode:String;tabel:String):String;
+  function validateKode(id:String;kodeDua:String;teksKode:String;tabel:String;var sbinfo:TStatusBar;var ekode:Tedit): Boolean; overload
+  function validateKode(kodeDua:String;teksKode:String;var sbinfo:TStatusBar;var ekode:Tedit): Boolean; overload
+
+  procedure CodeChar(var sender:TObject);
+  procedure phoneNumber(var sender:TObject);
+  procedure moneyNumber(var sender:TObject);
+  procedure number(var sender:TObject);
+  procedure controlA(sender:TObject;var key:char);
+  procedure price(var sender:TObject);
+  function generateKodeTransaksi(kode : String; tabel: String): String;
+  function keRupiah(teks : String) : String;
+  function keAngka(teks : String) : String;
+  procedure money(sender:tobject);
+  procedure DBGridSelectAllRow(AGrid:TDBGrid);
+
+implementation
+
+uses DatabaseScript, UDataModule;
+
+
+procedure DBGridSelectAllRow(AGrid:TDBGrid);
+begin
+AGrid.SelectedRows.Clear;
+with AGrid.DataSource.DataSet do
+    Begin
+    DisableControls;
+    First;
+    try
+      while not(EOF) do
+        Begin
+        AGrid.SelectedRows.CurrentRowSelected:=True;
+        next;
+        End;
+    finally
+        EnableControls;
+    End;
+    End;
+end;
+
+procedure money(sender:tobject);
+var
+  angka:integer;
+begin
+if tedit(sender).Text<>'' then
+   begin
+   moneyNumber(sender);
+
+   if TryStrToInt(tedit(sender).Text,angka) then
+      tedit(sender).Text:=IntToStr(angka);
+
+   if length(tedit(sender).Text)>3 then
+        tedit(sender).Text:=keRupiah(tedit(sender).Text);
+
+     TEdit(sender).SelStart:=Length(TEdit(sender).text);
+   end
+else
+   begin
+   TEdit(sender).Text:='0';
+   TEdit(sender).SelStart:=length(TEdit(sender).Text);
+   end;
+end;
+
+
+function keRupiah(teks : String) : String;
+var
+  NilaiRupiah: string;
+  AngkaRupiah: Currency;
+
+begin
+    NilaiRupiah := teks;
+    NilaiRupiah := StringReplace(NilaiRupiah,',','',[rfReplaceAll,rfIgnoreCase]);
+    NilaiRupiah := StringReplace(NilaiRupiah,'.','',[rfReplaceAll,rfIgnoreCase]);
+    AngkaRupiah := StrToCurrDef(NilaiRupiah,0);
+    teks := FormatCurr('#,###',AngkaRupiah);
+    result:=teks;
+end;
+
+
+function keAngka(teks : String) : String;
+var
+  hasil : string;
+begin
+Hasil:=teks;
+Hasil:=StringReplace(Hasil,',','',[rfReplaceAll,rfIgnoreCase]);
+Hasil:=StringReplace(Hasil,'.','',[rfReplaceAll,rfIgnoreCase]);
+Result:=Hasil;
+end;
+
+
+procedure price(var sender:TObject);
+var
+  angka:integer;
+begin
+if TryStrToInt(TEDIT(sender).Text,angka) then
+   TEDIT(sender).Text:=IntToStr(angka)
+else
+   begin
+   if Tedit(sender).Text='' then
+      begin
+      TEDIT(sender).Text:='0';
+      Tedit(sender).SelStart:=length(Tedit(sender).Text);
+      end;
+   end;
+end;
+
+procedure controlA(sender:TObject;var key:char);
+begin
+if sender is TEDIT then
+   begin
+     if Key = ^A then
+        begin
+          (Sender as TEdit).SelectAll;
+          Key := #0;
+        end;
+   end
+else if sender is TMEMO then
+    begin
+      if Key = ^A then
+        begin
+          (Sender as TMEMO).SelectAll;
+          Key := #0;
+        end;
+    end;
+if key=#13 then
+   key:=#0;
+end;
+
+
+procedure batal(aform:TForm;var id:string);
+var
+   i,j : Integer;
+
+begin
+with aform do
+  begin
+    i:=0;
+    j:=componentCount;
+    while i<=(j-1) do
+      begin
+      if Components[i] is TEdit then
+         TEdit(Components[i]).Clear;
+      if Components[i] is TRadioGroup then
+         TRadioGroup(Components[i]).ItemIndex:=-1;
+      if Components[i] is TMemo then
+         TMemo(Components[i]).Lines.Clear;
+      if Components[i] is TComboBox then
+         TComboBox(Components[i]).Text:=TComboBox(Components[i]).Hint;
+      inc(i);
+      end;
+    end;
+end;
+
+
+
+procedure batal(aform:TForm);
+var
+   i,j : Integer;
+
+begin
+with aform do
+  begin
+    i:=0;
+    j:=componentCount;
+    while i<=(j-1) do
+      begin
+      if Components[i] is TEdit then
+         TEdit(Components[i]).Clear;
+      if Components[i] is TRadioGroup then
+         TRadioGroup(Components[i]).ItemIndex:=-1;
+      if Components[i] is TMemo then
+         TMemo(Components[i]).Lines.Clear;
+      if Components[i] is TComboBox then
+         TComboBox(Components[i]).Text:=TComboBox(Components[i]).Hint;
+      inc(i);
+      end;
+    end;
+end;
+
+procedure setTanggal(var ctanggal:TComboBox;var cbulan:TComboBox;var ctahun:TComboBox);
+var
+  i:Integer;
+  thn,nol:string;
+
+begin
+    ctanggal.Text:=ctanggal.Hint;
+    ctanggal.Items.Add(ctanggal.Hint);
+    ctanggal.Items.BeginUpdate;
+      for i:=1 to 31 do
+          ctanggal.Items.Add(IntToStr(i));
+    ctanggal.Items.EndUpdate;
+
+    cbulan.Text:=cbulan.Hint;
+    cbulan.Items.Add(cbulan.Hint);
+    cbulan.Items.BeginUpdate;
+         for i:=1 to 12 do
+             cbulan.Items.Add(intToStr(i));
+    cbulan.Items.EndUpdate;
+
+    ctahun.Text:=ctahun.Hint;
+    thn:=FormatDateTime('yyyy',now);
+    ctahun.Items.Add(ctahun.Hint);
+    ctahun.Items.BeginUpdate;
+        for i:=0 to 100 do
+            ctahun.Items.Add(IntToStr(StrToInt(thn)-i));
+    ctahun.Items.EndUpdate;
+end;
+
+
+procedure setKadaluarsa(var ctanggal:TComboBox;var cbulan:TComboBox;var ctahun:TComboBox);
+var
+  i:Integer;
+  thn,nol:string;
+
+begin
+    ctanggal.Text:=ctanggal.Hint;
+    ctanggal.Items.Add(ctanggal.Hint);
+    ctanggal.Items.BeginUpdate;
+      for i:=1 to 31 do
+             ctanggal.Items.Add(nol+IntToStr(i));
+    ctanggal.Items.EndUpdate;
+
+    cbulan.Text:=cbulan.Hint;
+    cbulan.Items.Add(cbulan.Hint);
+    cbulan.Items.BeginUpdate;
+        for i:=1 to 12 do
+            cbulan.Items.Add(nol+IntToStr(i));
+    cbulan.Items.EndUpdate;
+
+    ctahun.Text:=ctahun.Hint;
+    thn:=FormatDateTime('yyyy',now);
+    ctahun.Items.Add(ctahun.Hint);
+    ctahun.Items.BeginUpdate;
+        for i:=1 to 10 do
+            ctahun.Items.Add(IntToStr(StrToInt(thn)+i));
+    ctahun.Items.EndUpdate;
+end;
+
+
+procedure setAgama(var cAgama:TComboBox);
+begin
+cAgama.Text:=cAgama.Hint;
+cAgama.Items.Add(cAgama.Hint);
+cAgama.Items.BeginUpdate;
+  cAgama.Items.Add('Islam');
+  cAgama.Items.Add('Kristen');
+  cAgama.Items.Add('Hindu');
+  cAgama.Items.Add('Buddha');
+  cAgama.Items.Add('Lain-lain');
+cAgama.Items.EndUpdate;
+end;
+
+
+procedure cleanArr(var arr: array of String);
+var
+   i:Integer;
+begin
+  for i:=0 to length(arr) do
+      arr[i]:='';
+end;
+
+function generateKodeTransaksi(kode : String; tabel: String): String;
+var
+   strSQL,temp : String;
+   angka,n:integer;
+
+begin
+runKueri(openKueri('id,kode',tabel,' order by kode desc limit 1'));
+
+if dm.zkue.RecordCount>0 then
+   begin
+   temp:=dm.zkue.Fields[1].AsString;
+   n:=Length(temp);
+   angka:=strToint(Copy(temp,4,n-3));
+   end
+else
+   angka:=0;
+
+Result:=kode+FormatFloat('000',angka+1);
+end;
+
+
+
+function generateKode(kode : String; tabel: String): String;
+var
+   strSQL,temp : String;
+   angka,n:integer;
+
+begin
+runKueri(openKueri('id,kode',tabel,' order by kode desc limit 1'));
+
+if dm.zkue.RecordCount>0 then
+   begin
+   temp:=dm.zkue.Fields[1].AsString;
+   n:=Length(temp);
+   angka:=strToint(Copy(temp,3,n-2));
+   end
+else
+   angka:=0;
+
+Result:=kode+FormatFloat('000',angka+1);
+end;
+
+
+function generateKodeKunjungan(kode:String;tabel:String):String;
+var
+   strSQL,temp : String;
+   angka,n:integer;
+
+begin
+runKueri(openKueri('noRegistrasi',tabel,' order by noRegistrasi desc limit 1'));
+
+if dm.zkue.RecordCount>0 then
+   begin
+   temp:=dm.zkue.Fields[0].AsString;
+   n:=Length(temp);
+   angka:=strToint(Copy(temp,3,n-2));
+   end
+else
+   angka:=0;
+
+Result:=kode+FormatFloat('000',angka+1);
+end;
+
+
+function validateKode(kodeDua:String;teksKode:String;var sbinfo:TStatusBar;var ekode:Tedit): Boolean;
+var
+  cek:Boolean;
+  kode,Skode,angka:string;
+  n,i:Integer;
+
+begin
+cek:=true;
+kode:=Copy(teksKode,1,2);
+n:=length(teksKode);
+
+angka:=Copy(teksKode,3,n-2);
+
+if kodeDua<>kode then
+   begin
+   sbinfo.Panels[1].Text:='Format kode salah, 2 digit kode pertama seharusnya '+kodeDua;
+   ekode.SetFocus;
+   ekode.SelStart:=Length(ekode.Text);
+   cek:=False;
+   end
+else
+   begin
+   if not(TryStrToInt(angka,i)) then
+      begin
+      sbinfo.Panels[1].Text:='Format kode salah, digit setelah '+kodeDua+' seharusnya angka';
+      ekode.SetFocus;
+      ekode.SelStart:=Length(ekode.Text);
+      cek:=False;
+      end
+   else
+      Begin
+      if i=0 then
+         begin
+         sbinfo.Panels[1].Text:='Format kode salah, digit setelah '+kodeDua+' seharusnya bukan 0';
+         ekode.SetFocus;
+         ekode.SelStart:=Length(ekode.Text);
+         cek:=False;
+         end;
+      end;
+   end;
+if not(cek) then
+   ekode.SetFocus;
+Result:=cek;
+end;
+
+function validateKode(id:String;kodeDua:String;teksKode:String;tabel:String;var sbinfo:TStatusBar;var ekode:Tedit): Boolean;
+var
+  cek:Boolean;
+  kode,Skode,angka:string;
+  n,i:Integer;
+
+begin
+cek:=true;
+kode:=Copy(teksKode,1,2);
+n:=length(teksKode);
+
+angka:=Copy(teksKode,3,n-2);
+
+if kodeDua<>kode then
+   begin
+   sbinfo.Panels[1].Text:='Format kode salah, 2 digit kode pertama seharusnya '+kodeDua;
+   ekode.SetFocus;
+   ekode.SelStart:=Length(ekode.Text);
+   cek:=False;
+   end
+else
+   begin
+   if not(TryStrToInt(angka,i)) then
+      begin
+      sbinfo.Panels[1].Text:='Format kode salah, digit setelah '+kodeDua+' seharusnya angka';
+      ekode.SetFocus;
+      ekode.SelStart:=Length(ekode.Text);
+      cek:=False;
+      end
+   else
+      Begin
+      if i=0 then
+         begin
+         sbinfo.Panels[1].Text:='Format kode salah, digit setelah '+kodeDua+' seharusnya bukan 0';
+         ekode.SetFocus;
+         ekode.SelStart:=Length(ekode.Text);
+         cek:=False;
+         end
+      else
+         begin
+         angka:=copy(generateKode(kodeDua,tabel),3,n-2);
+         if (i<>StrToInt(angka)) and (id='') then
+            begin
+            sbinfo.Panels[1].Text:='Silahkan gunakan kode yang telah disediakan ';
+            ekode.SetFocus;
+            ekode.SelStart:=Length(ekode.Text);
+            cek:=False;
+            end;
+         end;
+      end;
+   end;
+if not(cek) then
+   ekode.Text:=generateKode(kodeDua,tabel);
+Result:=cek;
+end;
+
+procedure CodeChar(var sender:TObject);
+const
+  AllowedStr=['a'..'z','A'..'Z','0'..'9'];
+var
+  i:integer;
+begin
+for i := 1 to Length(TEdit(Sender).Text) do
+  begin
+  if not(TEdit(Sender).Text[I] in Allowedstr) then
+    begin
+     TEdit(Sender).Undo;
+     Exit;
+    end;
+  end;
+TEdit(Sender).ClearUndo;
+TEdit(Sender).Text:=UpperCase(TEdit(Sender).Text);
+TEdit(Sender).SelStart:=Length(TEdit(Sender).Text);
+end;
+
+procedure phoneNumber(var sender:TObject);
+const
+  AllowedStr=['0'..'9',' ','+','-'];
+var
+  i:integer;
+begin
+for i := 1 to Length(TEdit(Sender).Text) do
+  begin
+  if not(TEdit(Sender).Text[I] in Allowedstr) then
+    begin
+     TEdit(Sender).Undo;
+     Exit;
+    end;
+  end;
+TEdit(Sender).ClearUndo;
+TEdit(Sender).Text:=UpperCase(TEdit(Sender).Text);
+TEdit(Sender).SelStart:=Length(TEdit(Sender).Text);
+end;
+
+procedure moneyNumber(var sender:TObject);
+const
+  AllowedStr=['0'..'9','.',','];
+var
+  i:integer;
+begin
+for i := 1 to Length(TEdit(Sender).Text) do
+  begin
+  if not(TEdit(Sender).Text[I] in Allowedstr) then
+    begin
+     TEdit(Sender).Undo;
+     Exit;
+    end;
+  end;
+TEdit(Sender).ClearUndo;
+TEdit(Sender).Text:=UpperCase(TEdit(Sender).Text);
+end;
+
+
+procedure number(var sender:TObject);
+const
+  AllowedStr=['0'..'9',#13];
+var
+  i,angka:integer;
+begin
+for i := 1 to Length(TEdit(Sender).Text) do
+  begin
+  if not(TEdit(Sender).Text[I] in Allowedstr) then
+    begin
+     TEdit(Sender).Undo;
+     Exit;
+    end;
+  end;
+TEdit(Sender).ClearUndo;
+TEdit(Sender).Text:=UpperCase(TEdit(Sender).Text);
+if TryStrToInt(tedit(sender).Text,angka) then
+      tedit(sender).Text:=IntToStr(angka);
+TEdit(Sender).SelStart:=Length(TEdit(Sender).Text);
+end;
+
+end.
+ 

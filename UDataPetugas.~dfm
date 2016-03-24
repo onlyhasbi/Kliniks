@@ -1,0 +1,324 @@
+object fpetugas: Tfpetugas
+  Left = 752
+  Top = 156
+  BorderStyle = bsSingle
+  Caption = 'Data Petugas'
+  ClientHeight = 437
+  ClientWidth = 480
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poOwnerFormCenter
+  OnActivate = FormActivate
+  OnKeyPress = FormKeyPress
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Label1: TLabel
+    Left = 86
+    Top = 24
+    Width = 28
+    Height = 16
+    Caption = 'Kode'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label2: TLabel
+    Left = 83
+    Top = 60
+    Width = 33
+    Height = 16
+    Caption = 'Nama'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label3: TLabel
+    Left = 48
+    Top = 95
+    Width = 76
+    Height = 16
+    Caption = 'Tempat Lahir'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label4: TLabel
+    Left = 46
+    Top = 131
+    Width = 78
+    Height = 16
+    Caption = 'Tanggal Lahir'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label6: TLabel
+    Left = 77
+    Top = 289
+    Width = 40
+    Height = 16
+    Caption = 'Alamat'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label7: TLabel
+    Left = 77
+    Top = 258
+    Width = 40
+    Height = 16
+    Caption = 'Agama'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label8: TLabel
+    Left = 72
+    Top = 356
+    Width = 46
+    Height = 16
+    Caption = 'Telepon'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object ekode: TEdit
+    Left = 142
+    Top = 24
+    Width = 193
+    Height = 22
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 0
+    OnChange = ekodeChange
+    OnKeyUp = ekodeKeyUp
+  end
+  object enama: TEdit
+    Left = 142
+    Top = 59
+    Width = 193
+    Height = 22
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 1
+  end
+  object etempatLahir: TEdit
+    Left = 142
+    Top = 94
+    Width = 193
+    Height = 22
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 2
+  end
+  object etelepon: TEdit
+    Left = 142
+    Top = 352
+    Width = 193
+    Height = 22
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 9
+    OnChange = eteleponChange
+  end
+  object ctanggal: TComboBox
+    Left = 142
+    Top = 129
+    Width = 57
+    Height = 24
+    Hint = 'Tgl'
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ItemHeight = 16
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 3
+    OnKeyPress = ctanggalKeyPress
+  end
+  object cbulan: TComboBox
+    Left = 206
+    Top = 128
+    Width = 57
+    Height = 24
+    Hint = 'Bln'
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ItemHeight = 16
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 4
+    OnKeyPress = ctanggalKeyPress
+  end
+  object ctahun: TComboBox
+    Left = 270
+    Top = 128
+    Width = 65
+    Height = 24
+    Hint = 'Tahun'
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ItemHeight = 16
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 5
+    OnKeyPress = ctanggalKeyPress
+  end
+  object cagama: TComboBox
+    Left = 142
+    Top = 254
+    Width = 193
+    Height = 24
+    Hint = 'Pilihan'
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ItemHeight = 16
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 7
+  end
+  object malamat: TMemo
+    Left = 142
+    Top = 289
+    Width = 193
+    Height = 49
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 8
+  end
+  object bsimpan: TButton
+    Left = 358
+    Top = 24
+    Width = 90
+    Height = 30
+    Caption = 'Simpan'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 10
+    OnClick = bsimpanClick
+  end
+  object bbatal: TButton
+    Left = 358
+    Top = 64
+    Width = 90
+    Height = 30
+    Caption = 'Batal'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 11
+    OnClick = bbatalClick
+  end
+  object sbinfo: TStatusBar
+    Left = 0
+    Top = 418
+    Width = 480
+    Height = 19
+    Panels = <
+      item
+        Text = '        Status'
+        Width = 80
+      end
+      item
+        Width = 50
+      end>
+  end
+  object rgKelamin: TRadioGroup
+    Left = 142
+    Top = 168
+    Width = 193
+    Height = 65
+    Caption = 'Kelamin'
+    Columns = 2
+    Ctl3D = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Items.Strings = (
+      'Pria'
+      'Wanita')
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 6
+  end
+end
