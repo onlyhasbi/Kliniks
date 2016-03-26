@@ -1,2 +1,2 @@
-# Sistem Informasi Klinik Kedokteran Timur
+# Sistem Informasi Klinik
 Sumber Kode Sistem Informasi Klinik dibangun dengan Bahasa Pemrograman Delphi
